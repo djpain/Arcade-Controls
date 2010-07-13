@@ -25,32 +25,36 @@
 #include <util/delay.h>
 #include "usb_gamepad.h"
 
-#define LED_CONFIG	(DDRD |= (1<<6))
-#define LED_OFF		(PORTD &= ~(1<<6))
-#define LED_ON		(PORTD |= (1<<6))
-
 #define CPU_PRESCALE(n)	(CLKPR = 0x80, CLKPR = (n))
 
-#define BUTTON1 (1 << 0)
-#define BUTTON2 (1 << 1)
+#define LED_CONFIG (DDRD |= (1<<6))
+#define LED_OFF (PORTD &= ~(1<<6))
+#define LED_ON (PORTD |= (1<<6))
 
-#define JOYSTICK_RIGHT (1 << 2)
-#define JOYSTICK_LEFT  (1 << 3)
-#define JOYSTICK_UP    (1 << 4)
-#define JOYSTICK_DOWN  (1 << 5)
 
-#define BUTTON_PINS   (BUTTON1 | BUTTON2)
+#define JOYSTICK_RIGHT (1 << 0)
+#define JOYSTICK_LEFT  (1 << 1)
+#define JOYSTICK_UP    (1 << 2)
+#define JOYSTICK_DOWN  (1 << 3)
+
+#define BUTTON_PINS   (BUTTON1 | BUTTON2 | BUTTON3)
 #define JOYSTICK_PINS (JOYSTICK_LEFT | JOYSTICK_RIGHT | JOYSTICK_UP | JOYSTICK_DOWN)
 
 int main(void) {
-  uint8_t b, x, y;
+  uint8_t f, a, x, y, x2, y2;
+  uint8_t i;
 
   // set for 16 MHz clock
   CPU_PRESCALE(0);
-  LED_CONFIG;
-  LED_ON; // power up led on startup for 1 sec
 
-  PORTB = (BUTTON_PINS | JOYSTICK_PINS); // enable pull-ups on button & joystick pins
+  // enable pull-ups on button & joystick pins
+  PORTB = 0xFF; 
+  PORTA = 0xFF;
+  PORTF = 0xFF;
+  PORTC = 0xFF;
+
+  //configure LED pin
+  LED_CONFIG;
 
   // Initialize the USB, and then wait for the host to set configuration.
   // If the Teensy is powered without a PC connected to the USB port,
@@ -63,8 +67,9 @@ int main(void) {
   _delay_ms(1000);
 
   while (1) {
-    b = 0; // assume no buttons pressed
-    x = y = 128; // assume no joystick movement
+    f = 0; // assume no buttons pressed
+    a = 0;
+    x = y = x2 = y2 = 128; // assume no joystick movement
     
     if ((PINB & JOYSTICK_LEFT) == 0) {
       x = 0;
@@ -78,17 +83,34 @@ int main(void) {
       y = 255;
     }
 
-    if ((PINB & BUTTON1) == 0) {
-      b = BUTTON1;
-    }
-    if ((PINB & BUTTON2) == 0) {
-      b |= BUTTON2;
+    if ((PINC & JOYSTICK_LEFT) == 0) {
+      x2 = 0;
+    } else if ((PINC & JOYSTICK_RIGHT) == 0) {
+      x2 = 255;
     }
 
-    usb_gamepad_action(x, y, b);
+    if ((PINC & JOYSTICK_UP) == 0) {
+      y2 = 0;
+    } else if ((PINC & JOYSTICK_DOWN) == 0) {
+      y2 = 255;
+    }
 
-    // debug message
-    if (x != 128 || y != 128 || b != 0) {
+    //buttons
+    for(i=0; i<8; ++i){
+	if( (PINA & (1 << i)) == 0 ){
+		a |= (1 << i);
+        }
+    }
+
+    for(i=0; i<8; ++i){
+	if( (PINF & (1 << i)) == 0 ){
+		f |= (1 << i);
+        }
+    }
+
+    usb_gamepad_action(x, y, x2, y2, f, a);
+
+    if (x != 128 || y != 128 || x2 != 128 || y2 != 128 || f != 0 || a != 0) {
       LED_ON;
     } else {
       LED_OFF;

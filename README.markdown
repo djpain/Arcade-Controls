@@ -1,23 +1,9 @@
-DIY ARCADE GAMEPAD
+CSH Arcade Controls
 ==================
 
-This project is my first attempt in creating USB powered arcade game
-controller. Its going to use Seimitsu LS-40 joystick & two Sanwa
-push-buttons. 
+Chris Lockfort (devnull@csh.rit.edu)
 
-I'm not going to use Arduino for this project since it
-can't act like HID device by default. [Teensy][2] is new Arduino-like
-development platform that can emulate any HID device.
+A USB joystick emulator for CSH's arcade controls.
 
-To build this project you'll need [CrossPack][1].
-
-I got inspiration for this project from this blog [post][3]. 
-
-Next step is to build some good looking game pad enclosure like
-this [Idiot Box][4].
-
-[1]: http://www.obdev.at/products/crosspack/index.html
-[2]: http://www.pjrc.com/teensy/
-[3]: http://tinkerlog.com/2009/05/08/tupperware-arcade-controls/
-[4]: http://slagcoin.com/joystick/example3.html
-
+Based on some open source code from grunskis for USB joystick stuff on AVR/Teensy board, which was in turn based off PJRC's USB keyboard HID device code for Teensy boards.
+I've adapted it to add a ton of new buttons, new axis, new HID descriptor, new AVR chip type to accomodate expanded pin count need, etc.

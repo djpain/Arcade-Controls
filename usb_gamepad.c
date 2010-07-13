@@ -32,8 +32,8 @@
  **************************************************************************/
 
 // You can change these to give your code its own name.
-#define STR_MANUFACTURER	L"Martins Grunskis"
-#define STR_PRODUCT		L"Gamepad"
+#define STR_MANUFACTURER	L"Computer Science House (Chris Lockfort)"
+#define STR_PRODUCT		L"Arcade Controller"
 
 
 // Mac OS-X and Linux automatically load the correct drivers.  On
@@ -115,16 +115,16 @@ static uint8_t PROGMEM gamepad_hid_report_desc[] = {
 	0x15, 0x00,        //     LOGICAL_MINIMUM (0)
 	0x26, 0xff, 0x00,  //     LOGICAL_MAXIMUM (255)
 	0x75, 0x08,        //     REPORT_SIZE (8)
-	0x95, 0x02,        //     REPORT_COUNT (2)
+	0x95, 0x04,        //     REPORT_COUNT (4)
 	0x81, 0x02,        //     INPUT (Data,Var,Abs)
 	0xc0,              //   END_COLLECTION
 	0x05, 0x09,        //   USAGE_PAGE (Button)
 	0x19, 0x01,        //   USAGE_MINIMUM (Button 1)
-	0x29, 0x02,        //   USAGE_MAXIMUM (Button 2)
+	0x29, 0x10,        //   USAGE_MAXIMUM (Button 8)
 	0x15, 0x00,        //   LOGICAL_MINIMUM (0)
 	0x25, 0x01,        //   LOGICAL_MAXIMUM (1)
 	0x75, 0x01,        //   REPORT_SIZE (1)
-	0x95, 0x02,        //   REPORT_COUNT (2)
+	0x95, 0x10,        //   REPORT_COUNT (16)
 	0x81, 0x02,        //   INPUT (Data,Var,Abs)
         0x95, 0x06,        //   REPORT_COUNT (6)
         0x81, 0x03,        //   INPUT (Constant,Var,Abs)
@@ -227,8 +227,11 @@ static volatile uint8_t usb_configuration = 0;
 
 uint8_t joystick_x = 128;
 uint8_t joystick_y = 128;
+uint8_t joystick_x2 = 128;
+uint8_t joystick_y2 = 128;
 
-uint8_t gamepad_buttons = 0;
+uint8_t gamepad_buttons_a = 0;
+uint8_t gamepad_buttons_f = 0;
 
 static uint8_t gamepad_idle_config = 0;
 
@@ -263,11 +266,13 @@ uint8_t usb_configured(void) {
   return usb_configuration;
 }
 
-int8_t usb_gamepad_action(uint8_t x, uint8_t y, uint8_t buttons) {
+int8_t usb_gamepad_action(uint8_t x, uint8_t y, uint8_t x2, uint8_t y2, uint8_t buttons_a, uint8_t buttons_f) {
   joystick_x = x;
   joystick_y = y;
-  gamepad_buttons = buttons; 
-
+  joystick_x2 = x2;
+  joystick_y2 = y2;
+  gamepad_buttons_a = buttons_a; 
+  gamepad_buttons_f = buttons_f;
   return usb_gamepad_send();
 }
 
@@ -294,7 +299,10 @@ int8_t usb_gamepad_send(void) {
 	}
 	UEDATX = joystick_x;
 	UEDATX = joystick_y;
-        UEDATX = gamepad_buttons;
+        UEDATX = joystick_x2;
+	UEDATX = joystick_y2;
+        UEDATX = gamepad_buttons_a;
+        UEDATX = gamepad_buttons_f;
 	UEINTX = 0x3A;
 	SREG = intr_state;
 	return 0;
@@ -482,7 +490,8 @@ ISR(USB_COM_vect)
 					usb_wait_in_ready();
                                         UEDATX = joystick_x;
                                         UEDATX = joystick_y;
-                                        UEDATX = gamepad_buttons;
+                                        UEDATX = gamepad_buttons_a;
+					UEDATX = gamepad_buttons_f;
 					usb_send_in();
 					return;
 				}
