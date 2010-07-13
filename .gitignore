@@ -1,3 +1,4 @@
+*.map
 *.lst
 *.lss
 *.hex
@@ -5,4 +6,4 @@
 *.eep
 *.o
 *.sym
-\.*\*.d
+.dep/
