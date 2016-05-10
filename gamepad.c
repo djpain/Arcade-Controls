@@ -1,4 +1,4 @@
-/* A USB joystick emulator for CSH's arcade controls.
+we/* A USB joystick emulator for CSH's arcade controls.
  *
  * Based on some open source code from grunskis for USB joystick stuff on 
  * AVR/Teensy board, which was in turn based off PJRC's USB keyboard HID 
